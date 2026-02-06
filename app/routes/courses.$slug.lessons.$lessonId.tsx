@@ -18,6 +18,7 @@ import { LessonProgressStatus } from "~/db/schema";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import {
+  AlertTriangle,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -29,7 +30,7 @@ import {
   Trophy,
   RotateCcw,
 } from "lucide-react";
-import { data } from "react-router";
+import { data, isRouteErrorResponse } from "react-router";
 
 export function meta({ data: loaderData }: Route.MetaArgs) {
   const title = loaderData?.lesson?.title ?? "Lesson";
@@ -649,6 +650,42 @@ function QuizSection({
  * Converts various YouTube URL formats to an embeddable URL.
  * Returns the original string if it doesn't match a known YouTube pattern.
  */
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let title = "Something went wrong";
+  let message = "An unexpected error occurred while loading this lesson.";
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404) {
+      title = "Lesson not found";
+      message = "The lesson you're looking for doesn't exist or may have been removed.";
+    } else if (error.status === 401) {
+      title = "Sign in required";
+      message = typeof error.data === "string" ? error.data : "Please select a user from the DevUI panel.";
+    } else {
+      title = `Error ${error.status}`;
+      message = typeof error.data === "string" ? error.data : error.statusText;
+    }
+  }
+
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center p-6">
+      <div className="text-center">
+        <AlertTriangle className="mx-auto mb-4 size-12 text-muted-foreground" />
+        <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+        <p className="mb-6 text-muted-foreground">{message}</p>
+        <div className="flex items-center justify-center gap-3">
+          <Link to="/courses">
+            <Button variant="outline">Browse Courses</Button>
+          </Link>
+          <Link to="/dashboard">
+            <Button>My Dashboard</Button>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function toYouTubeEmbedUrl(url: string): string {
   // Already an embed URL
   if (url.includes("youtube.com/embed/")) return url;

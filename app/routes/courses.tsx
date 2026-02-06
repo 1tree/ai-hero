@@ -1,10 +1,10 @@
-import { Form, Link, useSearchParams } from "react-router";
+import { Form, Link, useSearchParams, isRouteErrorResponse } from "react-router";
 import type { Route } from "./+types/courses";
 import { buildCourseQuery, getAllCategories, getLessonCountForCourse } from "~/services/courseService";
 import { CourseStatus } from "~/db/schema";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { BookOpen, Search, User } from "lucide-react";
+import { AlertTriangle, BookOpen, Search, User } from "lucide-react";
 
 export function meta() {
   return [
@@ -134,6 +134,31 @@ export default function CourseCatalog({ loaderData }: Route.ComponentProps) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let title = "Something went wrong";
+  let message = "An unexpected error occurred while loading courses.";
+
+  if (isRouteErrorResponse(error)) {
+    title = `Error ${error.status}`;
+    message = typeof error.data === "string" ? error.data : error.statusText;
+  }
+
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center p-6">
+      <div className="text-center">
+        <AlertTriangle className="mx-auto mb-4 size-12 text-muted-foreground" />
+        <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+        <p className="mb-6 text-muted-foreground">{message}</p>
+        <div className="flex items-center justify-center gap-3">
+          <Link to="/">
+            <Button>Go Home</Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

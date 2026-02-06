@@ -12,6 +12,7 @@ import { getCurrentUserId } from "~/lib/session";
 import { getUserById } from "~/services/userService";
 import { UserRole, CourseStatus } from "~/db/schema";
 import { Card, CardContent } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -19,8 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { BookOpen, Users } from "lucide-react";
-import { data } from "react-router";
+import { AlertTriangle, BookOpen, Users } from "lucide-react";
+import { data, isRouteErrorResponse, Link } from "react-router";
 
 export function meta() {
   return [
@@ -250,6 +251,39 @@ export default function AdminCourses({ loaderData }: Route.ComponentProps) {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let title = "Something went wrong";
+  let message = "An unexpected error occurred while loading course management.";
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 401) {
+      title = "Sign in required";
+      message = typeof error.data === "string" ? error.data : "Please select a user from the DevUI panel.";
+    } else if (error.status === 403) {
+      title = "Access denied";
+      message = typeof error.data === "string" ? error.data : "Only admins can access this page.";
+    } else {
+      title = `Error ${error.status}`;
+      message = typeof error.data === "string" ? error.data : error.statusText;
+    }
+  }
+
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center p-6">
+      <div className="text-center">
+        <AlertTriangle className="mx-auto mb-4 size-12 text-muted-foreground" />
+        <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+        <p className="mb-6 text-muted-foreground">{message}</p>
+        <div className="flex items-center justify-center gap-3">
+          <Link to="/">
+            <Button>Go Home</Button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

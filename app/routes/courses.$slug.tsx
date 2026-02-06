@@ -9,8 +9,8 @@ import { getCurrentUserId } from "~/lib/session";
 import { LessonProgressStatus } from "~/db/schema";
 import { Card, CardContent, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { BookOpen, CheckCircle2, Circle, Clock, PlayCircle, User } from "lucide-react";
-import { data } from "react-router";
+import { AlertTriangle, BookOpen, CheckCircle2, Circle, Clock, PlayCircle, User } from "lucide-react";
+import { data, isRouteErrorResponse } from "react-router";
 
 export function meta({ data: loaderData }: Route.MetaArgs) {
   const title = loaderData?.course?.title ?? "Course";
@@ -255,6 +255,42 @@ export default function CourseDetail({ loaderData }: Route.ComponentProps) {
             ))}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
+  let title = "Something went wrong";
+  let message = "An unexpected error occurred while loading this course.";
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404) {
+      title = "Course not found";
+      message = "The course you're looking for doesn't exist or may have been removed.";
+    } else if (error.status === 401) {
+      title = "Sign in required";
+      message = typeof error.data === "string" ? error.data : "Please select a user from the DevUI panel.";
+    } else {
+      title = `Error ${error.status}`;
+      message = typeof error.data === "string" ? error.data : error.statusText;
+    }
+  }
+
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center p-6">
+      <div className="text-center">
+        <AlertTriangle className="mx-auto mb-4 size-12 text-muted-foreground" />
+        <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+        <p className="mb-6 text-muted-foreground">{message}</p>
+        <div className="flex items-center justify-center gap-3">
+          <Link to="/courses">
+            <Button variant="outline">Browse Courses</Button>
+          </Link>
+          <Link to="/">
+            <Button>Go Home</Button>
+          </Link>
+        </div>
       </div>
     </div>
   );

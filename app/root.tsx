@@ -87,30 +87,43 @@ export default function App({ loaderData }: Route.ComponentProps) {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let title = "Something went wrong";
+  let message = "An unexpected error occurred.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
+    if (error.status === 404) {
+      title = "Page not found";
+      message = "The page you're looking for doesn't exist or may have been moved.";
+    } else {
+      title = `Error ${error.status}`;
+      message = typeof error.data === "string" ? error.data : (error.statusText || message);
+    }
   } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
+    message = error.message;
     stack = error.stack;
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className="flex min-h-screen items-center justify-center p-6">
+      <div className="text-center">
+        <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
+          <span className="text-2xl">!</span>
+        </div>
+        <h1 className="mb-2 text-2xl font-bold">{title}</h1>
+        <p className="mb-6 text-muted-foreground">{message}</p>
+        <a
+          href="/"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90"
+        >
+          Go Home
+        </a>
+        {stack && (
+          <pre className="mt-8 max-w-2xl overflow-x-auto rounded-lg bg-muted p-4 text-left text-xs">
+            <code>{stack}</code>
+          </pre>
+        )}
+      </div>
     </main>
   );
 }
