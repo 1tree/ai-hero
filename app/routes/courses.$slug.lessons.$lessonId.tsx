@@ -304,8 +304,8 @@ export default function LessonViewer({ loaderData }: Route.ComponentProps) {
     watchProgress,
     lessonProgressMap,
   } = loaderData;
-  const fetcher = useFetcher();
-  const quizFetcher = useFetcher();
+  const fetcher = useFetcher({ key: `mark-complete-${lesson.id}` });
+  const quizFetcher = useFetcher({ key: `quiz-${lesson.id}` });
   const isMarking =
     fetcher.state !== "idle" && fetcher.formData?.get("intent") === "mark-complete";
 
